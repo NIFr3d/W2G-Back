@@ -1,7 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const from2 = require('from2');
 const cors = require('cors');
+const mkvExtract = require('./mkvExtract.js');
 
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8081 });
@@ -28,10 +30,40 @@ app.get('/videos/:filename', (req, res) => {
 
     fs.access(filePath, fs.constants.F_OK, (err) => {
         if (err) {
-        console.log(`${filePath} ${err}`);
-        res.status(404).send('File not found');
+            console.log(`${filePath} ${err}`);
+            res.status(404).send('File not found');
         } else {
-        res.sendFile(filePath);
+            res.sendFile(filePath);
+        }
+    });
+});
+app.get('/subtitles/:filename', (req, res) =>{
+    const filename = req.params.filename;
+    console.log(`Asking subtitles for: ${filename}`);
+    const filePath = path.join(videoDir, filename);
+
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+            console.log(`${filePath} ${err}`);
+            res.status(404).send('File not found');
+        } else {
+            const ext = path.extname(filename);
+            const filenameWithoutExt = path.basename(filename, ext);
+            if (ext == ".mkv") {
+                const subtitlesPathAss = path.join(videoDir, `${filenameWithoutExt}.ass`);
+                const subtitlesPathSsa = path.join(videoDir, `${filenameWithoutExt}.ssa`);
+                const subtitlesExistAss = fs.existsSync(subtitlesPathAss);
+                const subtitlesExistSsa = fs.existsSync(subtitlesPathSsa);
+                if (subtitlesExistAss) {
+                    console.log(`Subtitles file exists: ${subtitlesPathAss}`);
+                    res.sendFile(subtitlesPathAss);
+                } else if (subtitlesExistSsa) {
+                    console.log(`Subtitles file exists: ${subtitlesPathSsa}`);
+                    res.sendFile(subtitlesPathSsa);
+                } else {
+                    console.log(`Subtitles file does not exist: ${subtitlesPathAss} or ${subtitlesPathSsa}`);
+                }
+            }
         }
     });
 });
