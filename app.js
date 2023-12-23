@@ -19,6 +19,10 @@ app.get('/videos', (req, res) => {
     if (err) {
       res.status(500).send('Error reading video directory');
     } else {
+        files = files.filter(file => {
+            const ext = path.extname(file);
+            return ext === '.mkv' || ext === '.mp4' || ext === '.avi';
+        });
       res.json(files);
     }
   });

@@ -36,16 +36,6 @@ fs.readdir(videoDir, (err, files) => {
               }
             });
           }
-          else if(f.name.endsWith('.ttf')){
-            const outputPath = path.join(videoDir, f.name);
-            fs.writeFile(outputPath, f.data, err => {
-              if (err) {
-                console.error(`Error writing file: ${err}`);
-              } else {
-                console.log(`File saved: ${outputPath}`);
-              }
-            });
-          }
         });
       });
     }
