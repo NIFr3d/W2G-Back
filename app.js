@@ -71,7 +71,179 @@ app.get('/subtitles/:filename', (req, res) =>{
         }
     });
 });
+
+app.get('/series', (req, res) => {
+    fs.readdir(videoDir, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            files = files.filter(file => {
+                return fs.lstatSync(path.join(videoDir, file)).isDirectory();
+            });
+            res.json(files);
+        }
+    });
+});
+
+function isSoloSeason(series) {
+    return fs.readdirSync(path.join(videoDir, series)).every(file => {
+        return /^E\d{2}\.\w+$/.test(file);
+    });
+}
+function isMultiSeason(series) {
+    return fs.readdirSync(path.join(videoDir, series)).every(file => {
+        return /^S\d{2}E\d{2}\.\w+$/.test(file);
+    });
+}
+
+app.get('/series/:serie/seasons', (req, res) => {
+    const seriesName = req.params.serie;
+    const seriesPath = path.join(videoDir, seriesName);
+    fs.readdir(seriesPath, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            const firstFile = files[0];
+            if(isSoloSeason(seriesName)) {
+                res.json(['01']);
+            } else if(isMultiSeason(seriesName)) {
+                const seasons = files.map(file => file.split('E')[0]);
+                const uniqueSeasons = [...new Set(seasons.map(season => season.replace('S', '')))];
+                res.json(uniqueSeasons);
+            } else {
+                res.status(500).send('Wrong file format in videos directory');
+            }
+        }
+    });
+});
+
+app.get('/series/:serie/:season/episodes', (req, res) => {
+    const seriesName = req.params.serie;
+    const season = req.params.season;
+    const seriesPath = path.join(videoDir, seriesName);
+    fs.readdir(seriesPath, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            if(isSoloSeason(seriesName) && season === '01') {
+                const episodes = [...new Set(files.filter(file => file.startsWith(`E`)).map(file => file.split('E')[1].split('.')[0]))];
+                res.json(episodes);
+            } else if(isMultiSeason(seriesName)) {
+                const episodes = [...new Set(files.filter(file => file.startsWith(`S${season}`)).map(file => file.split('E')[1].split('.')[0]))];
+                res.json(episodes);
+            } else {
+                res.status(500).send('Wrong file format in videos directory');
+            }
+        }
+    });
+});
+
+app.get('/episode/:serie/:season/:episode', (req, res) => {
+    const serie = req.params.serie;
+    const season = req.params.season;
+    const episode = req.params.episode;
+    let episodePathMkv;
+    let episodePathMp4;
+    if(isSoloSeason(serie)) {
+        episodePathMkv = path.join(videoDir, serie, `E${episode}.mkv`);
+        episodePathMp4 = path.join(videoDir, serie, `E${episode}.mp4`);
+        // si nécessaire, on peut ajouter d'autres formats ici
+    } else if(isMultiSeason(serie)) {
+        episodePathMkv = path.join(videoDir, serie, `S${season}E${episode}.mkv`);
+        episodePathMp4 = path.join(videoDir, serie, `S${season}E${episode}.mp4`);
+        // si nécessaire, on peut ajouter d'autres formats ici
+    } else {
+        res.status(500).send('Wrong file format in videos directory');
+    }
+    fs.access(episodePathMkv, fs.constants.F_OK, (err) => {
+        if (err) {
+            fs.access(episodePathMp4, fs.constants.F_OK, (err) => {
+                if (err) {
+                    res.status(404).send('File not found');
+                } else {
+                    res.sendFile(episodePathMp4);
+                }
+            });
+        } else {
+            res.sendFile(episodePathMkv);
+        }
+    });
+});
+
+app.get('/episode/:serie/:season/:episode/subtitles', (req, res) => {
+    const serie = req.params.serie;
+    const season = req.params.season;
+    const episode = req.params.episode;
+    let episodePathAss;
+    let episodePathSsa;
+    if(isSoloSeason(serie)) {
+        episodePathAss = path.join(videoDir, serie, `E${episode}.ass`);
+        episodePathSsa = path.join(videoDir, serie, `E${episode}.ssa`);
+        // si nécessaire, on peut ajouter d'autres formats ici
+    } else if(isMultiSeason(serie)) {
+        episodePathAss = path.join(videoDir, serie, `S${season}E${episode}.ass`);
+        episodePathSsa = path.join(videoDir, serie, `S${season}E${episode}.ssa`);
+    } else {
+        res.status(500).send('Wrong file format in videos directory');
+    }
+    fs.access(episodePathAss, fs.constants.F_OK, (err) => {
+        if (err) {
+            fs.access(episodePathSsa, fs.constants.F_OK, (err) => {
+                if (err) {
+                    res.status(404).send('File not found');
+                } else {
+                    res.sendFile(episodePathSsa);
+                }
+            });
+        } else {
+            res.sendFile(episodePathAss);
+        }
+    });   
+});
+
+app.get('/thumbnail/:serie', (req, res) => {
+    const serie = req.params.serie;
+    const seriePath = path.join(videoDir, serie);
+    fs.readdir(seriePath, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            const thumbnail = files.find(file => file.toLowerCase().endsWith('.jpg'));
+            res.sendFile(path.join(seriePath, thumbnail));
+        }
+    });
+});
+
+app.get('/search/:query', (req, res) => {
+    const query = req.params.query;
+    fs.readdir(videoDir, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            files = files.filter(file => {
+                return fs.lstatSync(path.join(videoDir, file)).isDirectory() && file.toLowerCase().includes(query.toLowerCase());
+            });
+            res.json(files);
+        }
+    });
+});
+
+app.get('/otherSeries', (req, res) => {
+    fs.readdir(videoDir, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            files = files.filter(file => {
+                return fs.lstatSync(path.join(videoDir, file)).isDirectory();
+            });
+            files = files.slice(0, 5);
+            res.json(files);
+        }
+    });
+});
+
 app.listen(8080, () => console.log('Express lancé au port 8080'));
+
 
 
 
