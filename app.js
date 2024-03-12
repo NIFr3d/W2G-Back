@@ -78,16 +78,11 @@ app.listen(8080, () => console.log('Express lancé au port 8080'));
 //Partie websocket
 let paused = true;
 let currentTime = 0;
-let lastMessageTime = Date.now();
 
 wss.on('connection', ws => {
     onConnection(ws);
     ws.on('message', message => {
-        let currentDate = Date.now();
-        if (currentTime - lastMessageTime >= 500) {
-            onMessage(message, ws);
-            lastMessageTime = currentDate;
-        }
+        onMessage(message, ws);
     });
     ws.on('error', error => {
         onError(error);
