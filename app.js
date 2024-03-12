@@ -87,12 +87,12 @@ app.get('/series', (req, res) => {
 
 function isSoloSeason(series) {
     return fs.readdirSync(path.join(videoDir, series)).every(file => {
-        return /^E\d{2}\.\w+$/.test(file);
+        return (/^E\d{2}\.\w+$/.test(file) || file.toLowerCase() == 'thumbnail.jpg');
     });
 }
 function isMultiSeason(series) {
     return fs.readdirSync(path.join(videoDir, series)).every(file => {
-        return /^S\d{2}E\d{2}\.\w+$/.test(file);
+        return (/^S\d{2}E\d{2}\.\w+$/.test(file) || file.toLowerCase() == 'thumbnail.jpg');
     });
 }
 
@@ -107,7 +107,7 @@ app.get('/series/:serie/seasons', (req, res) => {
             if(isSoloSeason(seriesName)) {
                 res.json(['01']);
             } else if(isMultiSeason(seriesName)) {
-                const seasons = files.map(file => file.split('E')[0]);
+                const seasons = files.map(file => file.split('E')[0]).filter(file => file.toLowerCase() !== 'thumbnail.jpg');
                 const uniqueSeasons = [...new Set(seasons.map(season => season.replace('S', '')))];
                 res.json(uniqueSeasons);
             } else {
@@ -125,7 +125,7 @@ app.get('/series/:serie/:season/episodes', (req, res) => {
         if (err) {
             res.status(500).send('Error reading video directory');
         } else {
-            if(isSoloSeason(seriesName) && season === '01') {
+            if(isSoloSeason(seriesName) && season === '01' || season === '1') {
                 const episodes = [...new Set(files.filter(file => file.startsWith(`E`)).map(file => file.split('E')[1].split('.')[0]))];
                 res.json(episodes);
             } else if(isMultiSeason(seriesName)) {
