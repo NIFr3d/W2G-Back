@@ -9,6 +9,14 @@ Lien de l'application frendend à utiliser : https://github.com/NIFr3d/W2G
 2. Assurez-vous d'avoir Node.js installé sur votre machine.
 3. Exécutez la commande `npm install` pour installer les dépendances.
 
+## Format des fichiers
+
+Les fichiers doivent être mis dans le dossier videos.
+
+Un sous-dossier par série qui porte le nom de la série.
+
+Dans ce dossier, les épisodes doivent être du type SXXEXX ou juste EXX (XX = numéro de saison ou d'épisode).
+
 ## Génération des fichiers de sous-titres
 
 Utilisez le script `extractSubtitles.js` avec Node.js pour générer les fichiers de sous-titres à partir de fichiers MKV.
