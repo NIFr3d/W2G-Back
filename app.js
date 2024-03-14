@@ -119,13 +119,14 @@ app.get('/series/:serie/seasons', (req, res) => {
 
 app.get('/series/:serie/:season/episodes', (req, res) => {
     const seriesName = req.params.serie;
-    const season = req.params.season;
+    let season = req.params.season;
+    if(season < 10) season = '0' + season;
     const seriesPath = path.join(videoDir, seriesName);
     fs.readdir(seriesPath, (err, files) => {
         if (err) {
             res.status(500).send('Error reading video directory');
         } else {
-            if(isSoloSeason(seriesName) && season === '01' || season === '1') {
+            if(isSoloSeason(seriesName) && (season === '01' || season === '1')) {
                 const episodes = [...new Set(files.filter(file => file.startsWith(`E`)).map(file => file.split('E')[1].split('.')[0]))];
                 res.json(episodes);
             } else if(isMultiSeason(seriesName)) {
@@ -199,6 +200,58 @@ app.get('/episode/:serie/:season/:episode/subtitles', (req, res) => {
             res.sendFile(episodePathAss);
         }
     });   
+});
+
+function formatEpisode(episode) {
+    let season;
+    let episodeNumber;
+
+    if (episode.startsWith("E")) {
+        season = 1;
+        episodeNumber = parseInt(episode.slice(1));
+    } else if (episode.startsWith("S")) {
+        const parts = episode.slice(1).split("E");
+        season = parseInt(parts[0]);
+        episodeNumber = parseInt(parts[1]);
+    }
+
+    return { season, episode: episodeNumber };
+}
+
+app.get('/nextEpisode/:serie/:season/:episode', (req, res) => {
+    const serie = req.params.serie;
+    const season = req.params.season;
+    const episode = req.params.episode;
+    let episodeplus1 = parseInt(episode) + 1;
+    if(episodeplus1 < 10) episodeplus1 = '0' + episodeplus1;
+    let nextEpisode;
+    let nextEpisode2;
+    if(isSoloSeason(serie)) {
+        nextEpisode = `E${episodeplus1}`;
+    } else if(isMultiSeason(serie)) {
+        let seasonNbr = parseInt(season);
+        let seasonNbrplus1 = seasonNbr + 1;
+        if(seasonNbr < 10) seasonNbr = '0' + seasonNbr;
+        if(seasonNbrplus1 < 10) seasonNbrplus1 = '0' + seasonNbrplus1;
+        nextEpisode = `S${season}E${episodeplus1}`;
+        nextEpisode2 = `S${seasonNbrplus1}E01`;
+    } else {
+        res.status(500).send('Wrong file format in videos directory');
+    }
+    const seriePath = path.join(videoDir, serie);
+    fs.readdir(seriePath, (err, files) => {
+        if (err) {
+            res.status(500).send('Error reading video directory');
+        } else {
+            if(files.includes(`${nextEpisode}.mkv`) || files.includes(`${nextEpisode}.mp4`)) {
+                res.json(formatEpisode(nextEpisode));
+            } else if(files.includes(`${nextEpisode2}.mkv`) || files.includes(`${nextEpisode2}.mp4`)) {
+                res.json(formatEpisode(nextEpisode2));
+            } else {
+                res.status(404).send('Current episode is the last one');
+            }
+        }
+    });
 });
 
 app.get('/thumbnail/:serie', (req, res) => {
