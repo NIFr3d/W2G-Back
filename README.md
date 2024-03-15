@@ -17,6 +17,10 @@ Un sous-dossier par série qui porte le nom de la série.
 
 Dans ce dossier, les épisodes doivent être du type SXXEXX ou juste EXX (XX = numéro de saison ou d'épisode).
 
+Conversion des vidéos au format mp4 recommandée.
+
+Vous pouvez ajouter une miniature par série, nommée thumbnail.jpg.
+
 ## Génération des fichiers de sous-titres
 
 Utilisez le script `extractSubtitles.js` avec Node.js pour générer les fichiers de sous-titres à partir de fichiers MKV.
