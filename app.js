@@ -1,9 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const from2 = require('from2');
 const cors = require('cors');
-const mkvExtract = require('./mkvExtract.js');
 
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8081 });
@@ -301,8 +299,8 @@ app.listen(8080, () => console.log('Express lancé au port 8080'));
 
 
 //Partie websocket
-let paused = true;
-let currentTime = 0;
+
+const rooms = new Map();
 
 wss.on('connection', ws => {
     onConnection(ws);
@@ -312,60 +310,80 @@ wss.on('connection', ws => {
     ws.on('error', error => {
         onError(error);
     });
-    ws.on('close', ws => {
-        onClose();
+    ws.on('close', () => {
+        onClose(ws);
     })
 });
-wss.on('connection', ws => {
-    onConnection(ws);
-    ws.on('message', message => {
-        onMessage(message, ws);
-    });
-    ws.on('error', error => {
-        onError(error);
-    });
-    ws.on('close', ws => {
-        onClose();
-    })
-});
+
 
 onConnection = (ws) => {
     console.log('Client connected');
-    ws.send(JSON.stringify({ event: 'welcome', paused: paused, currentTime: currentTime}));
+    ws.send(JSON.stringify({ event: 'welcome'}));
 }
 onMessage = (message, ws) => {
     console.log(`Received message => ${message}`);
     message = JSON.parse(JSON.parse(message));
+    if (message.event == "joinRoom") {
+        if(!rooms.has(message.room)) {
+            rooms.set(message.room, { clients: new Set(), paused: true, currentTime: 0 });
+        }
+        rooms.get(message.room).clients.add(ws);
+        ws.send(JSON.stringify({ event: 'joinedRoom', currentTime: rooms.get(message.room).currentTime, paused: rooms.get(message.room).paused }));
+    }
     if (message.event == "pause") {
-        paused = true;
-        currentTime = message.currentTime;
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client != ws) {
-                client.send(JSON.stringify({ event: 'pause', currentTime: currentTime }));
+        rooms.forEach(room => {
+            if (room.clients.has(ws)) {
+                room.paused = true;
+                room.currentTime = message.currentTime;
+                room.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN && client !== ws) {
+                        client.send(JSON.stringify({ event: 'pause', currentTime: room.currentTime }));
+                    }
+                });
             }
         });
     } else if (message.event == "play") {
-        paused = false;
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client != ws) {
-                client.send(JSON.stringify({ event: 'play' }));
+        rooms.forEach(room => {
+            if (room.clients.has(ws)) {
+                room.paused = false;
+                room.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN && client !== ws) {
+                        client.send(JSON.stringify({ event: 'play' }));
+                    }
+                });
             }
         });
     }
     else if (message.event == "setTime") {
-        if(Math.abs(message.currentTime - currentTime) > 1) {
-            currentTime = message.currentTime;
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN && client != ws) {
-                    client.send(JSON.stringify({ event: 'setTime', currentTime: currentTime }));
+        rooms.forEach(room => {
+            if (room.clients.has(ws)) {
+                if(Math.abs(room.currentTime - message.currentTime) > 1) {
+                    room.currentTime = message.currentTime;
+                    room.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN && client !== ws) {
+                            client.send(JSON.stringify({ event: 'setTime', currentTime: room.currentTime }));
+                        }
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 }
 onError = (error) => {
     console.log(`Error occured: ${error}`);
 }
-onClose = () => {
+onClose = (ws) => {
+    const roomKeys = Array.from(rooms.keys());
+    roomKeys.forEach(roomKey => {
+        const room = rooms.get(roomKey);
+        if (room.clients.has(ws)) {
+            room.clients.delete(ws);
+            if(room.clients.size == 0) {
+                // on utilise l'identifiant de la room pour la supprimer
+                rooms.delete(roomKey);
+            }
+        }
+    });
+    console.dir(rooms);
     console.log('Client disconnected');
 }
