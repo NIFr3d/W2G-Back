@@ -1,7 +1,7 @@
 # W2G-Back
 
 Ceci est l'application backend qui sert les fichiers vidéos et sous-titres situés dans le sous-dossier `videos`. Elle lance aussi un websocket pour la synchronisation entre les utilisateurs regardant la même vidéo.
-Lien de l'application frendend à utiliser : https://github.com/NIFr3d/W2G
+Lien de l'application frontend à utiliser : https://github.com/NIFr3d/W2G
 
 ## Installation
 
