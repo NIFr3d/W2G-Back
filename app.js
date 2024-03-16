@@ -10,7 +10,8 @@ console.log('WebSocket lancé au port 8081')
 //Partie express
 const app = express();
 app.use(cors());
-const videoDir = path.join(__dirname, 'videos');
+// const videoDir = path.join(__dirname, 'videos');
+var { videoDir} = require('./config.js');
 
 app.get('/videos', (req, res) => {
   fs.readdir(videoDir, (err, files) => {

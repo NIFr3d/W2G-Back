@@ -1,6 +1,6 @@
 # W2G-Back
 
-Ceci est l'application backend qui sert les fichiers vidéos et sous-titres situés dans le sous-dossier `videos`. Elle lance aussi un websocket pour la synchronisation entre les utilisateurs regardant la même vidéo.
+Ceci est l'application backend qui sert des fichiers vidéos et sous-titres. Elle lance aussi un websocket pour la synchronisation entre les utilisateurs regardant la même vidéo.
 Lien de l'application frontend à utiliser : https://github.com/NIFr3d/W2G
 
 ## Installation
@@ -11,6 +11,14 @@ Lien de l'application frontend à utiliser : https://github.com/NIFr3d/W2G
 
 ## Format des fichiers
 
+Vous devez renseigner le dossier qui contient les vidéos dans `config.js` à créer dans la racine. Exemple de fichier :
+```javascript
+const path = require('path');
+videoDir = path.join(__dirname, 'videos');
+module.exports = {
+    videoDir: videoDir,
+};
+```
 Les fichiers doivent être mis dans le dossier videos.
 
 Un sous-dossier par série qui porte le nom de la série.
