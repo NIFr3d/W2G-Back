@@ -2,16 +2,45 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
+const {getVideoDurationInSeconds} = require('get-video-duration');
 
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8081 });
 console.log('WebSocket lancé au port 8081')
+
+
+//Partie DB
+const dbPath = path.join(__dirname, 'db.sqlite');
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Error opening database:', err);
+    } else {
+        // Create the resume_watching table if it doesn't exist
+        db.run(`
+            CREATE TABLE IF NOT EXISTS resume_watching (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                serie TEXT,
+                season INTEGER,
+                episode INTEGER,
+                currentTime INTEGER
+            )
+        `, (err) => {
+            if (err) {
+                console.error('Error creating resume_watching table:', err);
+            } else {
+                console.log('resume_watching table created');
+            }
+        });
+    }
+});
 
 //Partie express
 const app = express();
 app.use(cors());
 // const videoDir = path.join(__dirname, 'videos');
 var { videoDir} = require('./config.js');
+
 
 app.get('/videos', (req, res) => {
   fs.readdir(videoDir, (err, files) => {
@@ -280,6 +309,41 @@ app.get('/search/:query', (req, res) => {
     });
 });
 
+app.get('/resumeWatching', (req, res) => {
+    db.all(`
+        SELECT * FROM resume_watching
+    `, [], (err, rows) => {
+        if (err) {
+            console.error('Error selecting from resume_watching:', err);
+            res.status(500).send('Error selecting from resume_watching');
+        } else {
+            const promises = rows.map(row => {
+                const currentTime = row.currentTime;
+                let videoPath;
+                if(isSoloSeason(row.serie)) {
+                    videoPath = path.join(videoDir, row.serie, `E${row.episode}.mp4`);
+                } else if(isMultiSeason(row.serie)) {
+                    videoPath = path.join(videoDir, row.serie, `S${row.season}E${row.episode}.mp4`);
+                }
+
+                return getVideoDurationInSeconds(videoPath).then(duration => {
+                    const totalVideoTime = duration;
+                    const progression = (currentTime / totalVideoTime) * 100;
+                    return { ...row, progression };
+                });
+            });
+
+            // Attendez que toutes les promesses soient résolues avant d'envoyer la réponse
+            Promise.all(promises).then(rowsWithProgression => {
+                res.json(rowsWithProgression);
+            }).catch(err => {
+                console.error('Error getting video durations:', err);
+                res.status(500).send('Error getting video durations');
+            });
+        }
+    });
+});
+
 app.get('/otherSeries', (req, res) => {
     fs.readdir(videoDir, (err, files) => {
         if (err) {
@@ -366,6 +430,42 @@ onMessage = (message, ws) => {
                         }
                     });
                 }
+            }
+        });
+    }
+    else if(message.event == "updateResumeWatching") {
+        let serie = message.serie;
+        let season = message.season;
+        let episode = message.episode;
+        let currentTime = message.currentTime;
+        db.get(`
+            SELECT * FROM resume_watching WHERE serie = ? ORDER BY id DESC LIMIT 1
+        `, [serie], (err, row) => {
+            if (err) {
+            console.error('Error selecting from resume_watching:', err);
+            } else {
+            if (row) {
+                db.run(`
+                UPDATE resume_watching SET season = ?, episode = ?, currentTime = ? WHERE id = ?
+                `, [season, episode, currentTime, row.id], (err) => {
+                if (err) {
+                    console.error('Error updating resume_watching:', err);
+                } else {
+                    console.log('Resume watching updated successfully');
+                }
+                });
+            } else {
+                db.run(`
+                INSERT INTO resume_watching (serie, season, episode, currentTime)
+                VALUES (?, ?, ?, ?)
+                `, [serie, season, episode, currentTime], (err) => {
+                if (err) {
+                    console.error('Error inserting into resume_watching:', err);
+                } else {
+                    console.log('Resume watching inserted successfully');
+                }
+                });
+            }
             }
         });
     }
