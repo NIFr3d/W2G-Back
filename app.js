@@ -4,14 +4,14 @@ const path = require('path');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const {getVideoDurationInSeconds} = require('get-video-duration');
-
+var { videoDir} = require('./config.js');
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8081 });
 console.log('WebSocket lancé au port 8081')
 
 
 //Partie DB
-const dbPath = path.join(__dirname, 'db.sqlite');
+const dbPath = path.join(videoDir, 'db.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err);
@@ -39,7 +39,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 const app = express();
 app.use(cors());
 // const videoDir = path.join(__dirname, 'videos');
-var { videoDir} = require('./config.js');
+
 
 
 app.get('/videos', (req, res) => {
@@ -321,8 +321,11 @@ app.get('/resumeWatching', (req, res) => {
                 const currentTime = row.currentTime;
                 let videoPath;
                 if(isSoloSeason(row.serie)) {
+                    row.episode < 10 ? row.episode = '0' + row.episode : row.episode;
                     videoPath = path.join(videoDir, row.serie, `E${row.episode}.mp4`);
                 } else if(isMultiSeason(row.serie)) {
+                    row.season < 10 ? row.season = '0' + row.season : row.season;
+                    row.episode < 10 ? row.episode = '0' + row.episode : row.episode;
                     videoPath = path.join(videoDir, row.serie, `S${row.season}E${row.episode}.mp4`);
                 }
 
