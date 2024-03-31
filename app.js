@@ -330,6 +330,24 @@ app.get("/thumbnail/:serie", (req, res) => {
   });
 });
 
+app.get("/thumbnail/:serie/:season/:episode", (req, res) => {
+  const serie = req.params.serie;
+  let season = req.params.season;
+  let episode = req.params.episode;
+  if (season < 10) season = "0" + season;
+  if (episode < 10) episode = "0" + episode;
+  let thumbnail;
+  if (isSoloSeason(serie)) {
+    thumbnail = `E${episode}.png`;
+  } else if (isMultiSeason(serie)) {
+    thumbnail = `S${season}E${episode}.png`;
+  } else {
+    res.status(500).send("Wrong file format in videos directory");
+  }
+  const seriePath = path.join(videoDir, serie);
+  res.sendFile(path.join(seriePath, thumbnail));
+});
+
 app.get("/search/:query", (req, res) => {
   const query = req.params.query;
   fs.readdir(videoDir, (err, files) => {
@@ -363,15 +381,24 @@ app.get("/resumeWatching/:username", (req, res) => {
           const currentTime = row.currentTime;
           let videoPath;
           if (isSoloSeason(row.serie)) {
-            row.episode < 10 ? (row.episode = "0" + row.episode) : row.episode;
-            videoPath = path.join(videoDir, row.serie, `E${row.episode}.mp4`);
+            let episode;
+            row.episode < 10
+              ? (episode = "0" + row.episode)
+              : (episode = row.episode);
+            videoPath = path.join(videoDir, row.serie, `E${episode}.mp4`);
           } else if (isMultiSeason(row.serie)) {
-            row.season < 10 ? (row.season = "0" + row.season) : row.season;
-            row.episode < 10 ? (row.episode = "0" + row.episode) : row.episode;
+            let season;
+            let episode;
+            row.season < 10
+              ? (season = "0" + row.season)
+              : (season = row.season);
+            row.episode < 10
+              ? (episode = "0" + row.episode)
+              : (episode = row.episode);
             videoPath = path.join(
               videoDir,
               row.serie,
-              `S${row.season}E${row.episode}.mp4`
+              `S${season}E${episode}.mp4`
             );
           }
 
