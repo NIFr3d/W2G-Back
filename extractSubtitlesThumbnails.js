@@ -3,14 +3,14 @@ const path = require("path");
 const mkvExtract = require("./mkvExtract.js");
 const ffmpeg = require("fluent-ffmpeg");
 
-var { videoDir } = require("./config.js");
+var { videoDirNative } = require("./config.js");
 let serieToExtract;
 let serieDir;
 
 // récupérer l'argument passé en ligne de commande
 if (process.argv.length > 2) {
   serieToExtract = process.argv[2];
-  serieDir = path.join(videoDir, serieToExtract);
+  serieDir = path.join(videoDirNative, serieToExtract);
 } else {
   console.log("No serie specified");
   return;
