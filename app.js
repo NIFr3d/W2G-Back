@@ -70,41 +70,46 @@ app.get("/videos/:filename", (req, res) => {
     }
   });
 });
-app.get("/subtitles/:filename", (req, res) => {
-  const filename = req.params.filename;
-  console.log(`Asking subtitles for: ${filename}`);
-  const filePath = path.join(videoDir, filename);
+//Get list of subtitles available for a specific episode
+app.get("/subtitles/:serie/:season/:episode", (req, res) => {
+  const serie = req.params.serie;
+  const season = req.params.season;
+  const episode = req.params.episode;
 
-  fs.access(filePath, fs.constants.F_OK, (err) => {
+  fs.readdir(path.join(videoDir, serie), (err, files) => {
     if (err) {
-      console.log(`${filePath} ${err}`);
-      res.status(404).send("File not found");
+      res.status(500).send("Error reading video directory");
     } else {
-      const ext = path.extname(filename);
-      const filenameWithoutExt = path.basename(filename, ext);
-      if (ext == ".mkv" || ext == ".mp4") {
-        const subtitlesPathAss = path.join(
-          videoDir,
-          `${filenameWithoutExt}.ass`
+      const subtitles = files.filter((file) => {
+        return (
+          (isSoloSeason(serie)
+            ? file.startsWith(`E${episode}`)
+            : file.startsWith(`S${season}E${episode}`)) &&
+          (file.endsWith(".ass") || file.endsWith(".ssa"))
         );
-        const subtitlesPathSsa = path.join(
-          videoDir,
-          `${filenameWithoutExt}.ssa`
-        );
-        const subtitlesExistAss = fs.existsSync(subtitlesPathAss);
-        const subtitlesExistSsa = fs.existsSync(subtitlesPathSsa);
-        if (subtitlesExistAss) {
-          console.log(`Subtitles file exists: ${subtitlesPathAss}`);
-          res.sendFile(subtitlesPathAss);
-        } else if (subtitlesExistSsa) {
-          console.log(`Subtitles file exists: ${subtitlesPathSsa}`);
-          res.sendFile(subtitlesPathSsa);
-        } else {
-          console.log(
-            `Subtitles file does not exist: ${subtitlesPathAss} or ${subtitlesPathSsa}`
-          );
-        }
-      }
+      });
+      res.send(
+        subtitles.map((subtitle) => subtitle.split(".").slice(1).join("."))
+      );
+    }
+  });
+});
+//Get a subtitle file for a specific episode
+app.get("/subtitles/:serie/:season/:episode/:subtitle", (req, res) => {
+  const serie = req.params.serie;
+  const subtitle = req.params.subtitle;
+  const season = req.params.season;
+  const episode = req.params.episode;
+
+  const subtitleFile = isSoloSeason(serie)
+    ? `E${episode}.${subtitle}`
+    : `S${season}E${episode}.${subtitle}`;
+  const subtitlePath = path.join(videoDir, serie, subtitleFile);
+  fs.access(subtitlePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.log(`${subtitleFile} ${err}`);
+    } else {
+      res.sendFile(subtitlePath);
     }
   });
 });
@@ -124,13 +129,18 @@ app.get("/series", (req, res) => {
 
 function isSoloSeason(series) {
   return fs.readdirSync(path.join(videoDir, series)).every((file) => {
-    return /^E\d{2}\.\w+$/.test(file) || file.toLowerCase() == "thumbnail.jpg";
+    return (
+      /^E\d{2}(\.[\w\-\.]+)?\.\w+$/.test(file) ||
+      file.toLowerCase() == "thumbnail.jpg"
+    );
   });
 }
+
 function isMultiSeason(series) {
   return fs.readdirSync(path.join(videoDir, series)).every((file) => {
     return (
-      /^S\d{2}E\d{2}\.\w+$/.test(file) || file.toLowerCase() == "thumbnail.jpg"
+      /^S\d{2}E\d{2}(\.[\w\-\.]+)?\.\w+$/.test(file) ||
+      file.toLowerCase() == "thumbnail.jpg"
     );
   });
 }
@@ -222,37 +232,6 @@ app.get("/episode/:serie/:season/:episode", (req, res) => {
       });
     } else {
       res.sendFile(episodePathMkv);
-    }
-  });
-});
-
-app.get("/episode/:serie/:season/:episode/subtitles", (req, res) => {
-  const serie = req.params.serie;
-  const season = req.params.season;
-  const episode = req.params.episode;
-  let episodePathAss;
-  let episodePathSsa;
-  if (isSoloSeason(serie)) {
-    episodePathAss = path.join(videoDir, serie, `E${episode}.ass`);
-    episodePathSsa = path.join(videoDir, serie, `E${episode}.ssa`);
-    // si nécessaire, on peut ajouter d'autres formats ici
-  } else if (isMultiSeason(serie)) {
-    episodePathAss = path.join(videoDir, serie, `S${season}E${episode}.ass`);
-    episodePathSsa = path.join(videoDir, serie, `S${season}E${episode}.ssa`);
-  } else {
-    res.status(500).send("Wrong file format in videos directory");
-  }
-  fs.access(episodePathAss, fs.constants.F_OK, (err) => {
-    if (err) {
-      fs.access(episodePathSsa, fs.constants.F_OK, (err) => {
-        if (err) {
-          res.status(404).send("File not found");
-        } else {
-          res.sendFile(episodePathSsa);
-        }
-      });
-    } else {
-      res.sendFile(episodePathAss);
     }
   });
 });
@@ -377,7 +356,7 @@ app.get("/resumeWatching/:username", (req, res) => {
         console.error("Error selecting from resume_watching:", err);
         res.status(500).send("Error selecting from resume_watching");
       } else {
-        const promises = rows.map((row) => {
+        const promises = rows.map(async (row) => {
           const currentTime = row.currentTime;
           let videoPath;
           if (isSoloSeason(row.serie)) {
@@ -402,11 +381,10 @@ app.get("/resumeWatching/:username", (req, res) => {
             );
           }
 
-          return getVideoDurationInSeconds(videoPath).then((duration) => {
-            const totalVideoTime = duration;
-            const progression = (currentTime / totalVideoTime) * 100;
-            return { ...row, progression };
-          });
+          const duration = await getVideoDurationInSeconds(videoPath);
+          const totalVideoTime = duration;
+          const progression = (currentTime / totalVideoTime) * 100;
+          return { ...row, progression };
         });
 
         // Attendez que toutes les promesses soient résolues avant d'envoyer la réponse
