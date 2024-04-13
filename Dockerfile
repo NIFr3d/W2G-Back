@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install npm dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm i --only=production
 
 # Expose ports
 EXPOSE 8080
