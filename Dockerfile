@@ -6,7 +6,7 @@ WORKDIR /app
 
 
 # Install npm dependencies
-COPY package*.json ./
+COPY package.json ./
 RUN npm i --only=production
 
 # Expose ports
