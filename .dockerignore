@@ -1,2 +1,6 @@
 node_modules/
 videos/
+extractextractSubtitlesThumbnails.js
+mkvExtract.js
+.gitignore
+README.md
