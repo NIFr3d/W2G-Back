@@ -1,7 +1,7 @@
 const util = require("util");
 const fs = require("fs");
 const path = require("path");
-const { videoDirNative } = require("./config.js");
+const videoDir = process.env.VIDEO_DIR || path.join(__dirname, "videos");
 const mkvExtract = require("./mkvExtract.js"); // Assurez-vous d'avoir cette bibliothèque
 const ffmpeg = require("fluent-ffmpeg"); // Assurez-vous d'avoir cette bibliothèque
 const chalk = require("chalk");
@@ -18,9 +18,13 @@ const unlink = util.promisify(fs.unlink);
 // récupérer l'argument passé en ligne de commande
 if (process.argv.length > 2) {
   serieToExtract = process.argv[2];
-  serieDir = path.join(videoDirNative, serieToExtract);
+  serieDir = path.join(videoDir, serieToExtract);
 } else {
-  console.log("No serie specified");
+  console.log(
+    chalk.red("No serie specified\n") +
+      "Usage: " +
+      chalk.blue("node extractSubtitlesThumbnails.js <serie>")
+  );
   return;
 }
 let multi = new cliProgress.MultiBar(

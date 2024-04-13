@@ -4,7 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const { getVideoDurationInSeconds } = require("get-video-duration");
-var { videoDir } = require("./config.js");
+const videoDir = process.env.VIDEO_DIR || path.join(__dirname, "videos");
 const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 8081 });
 console.log("WebSocket lancé au port 8081");

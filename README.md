@@ -11,22 +11,11 @@ Lien de l'application frontend à utiliser : https://github.com/NIFr3d/W2G
 
 ## Format des fichiers
 
-Vous devez renseigner le dossier qui contient les vidéos dans `config.js` à créer dans la racine. Exemple de fichier :
+Vous pouvez créer une variable d'environnement pour indiquer le chemin absolu vers le dossier contenant les vidéos. Sinon, vous devez créer un sous-dossier dans la racine du projet s'appellant 'videos'.
 
-```javascript
-const path = require("path");
-videoDir = path.join(__dirname, "videos");
-module.exports = {
-  videoDir: videoDir, //videoDir est utilisé dans app.js, possible de le modifier
-  videoDirNative: videoDir, //videoDirNative est utilisé pour le script extractSubtitlesThumbnails.js
-};
-```
+Dans ce dossier, créer un sous-dossier par série qui porte le nom de la série.
 
-Les fichiers doivent être mis dans le dossier videos.
-
-Un sous-dossier par série qui porte le nom de la série.
-
-Dans ce dossier, les épisodes doivent être du type SXXEXX ou juste EXX (XX = numéro de saison ou d'épisode).
+Dans ce sous-dossier, les épisodes doivent être du type SXXEXX ou juste EXX (XX = numéro de saison ou d'épisode).
 
 Conversion des vidéos au format mp4 recommandée.
 
