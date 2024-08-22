@@ -29,10 +29,10 @@ public class VideoController {
 
   @PostMapping()
   public ResponseEntity<Video> uploadVideo(@RequestParam("video") MultipartFile video,
-      @RequestParam("showId") Long showId,
+      @RequestParam("serieId") Long serieId,
       @RequestParam("seasonNumber") int seasonNumber,
       @RequestParam("episodeNumber") int episodeNumber) {
-    Video videoResult = videoService.uploadVideo(video, showId, seasonNumber, episodeNumber);
+    Video videoResult = videoService.uploadVideo(video, serieId, seasonNumber, episodeNumber);
     return ResponseEntity.ok(videoResult);
   }
 

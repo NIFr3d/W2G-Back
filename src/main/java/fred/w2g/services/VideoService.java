@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import fred.w2g.entities.Show;
+import fred.w2g.entities.Serie;
 import fred.w2g.entities.Video;
 import fred.w2g.exceptions.CustomException;
-import fred.w2g.repositories.ShowRepository;
+import fred.w2g.repositories.SerieRepository;
 import fred.w2g.repositories.VideoRepository;
 import jakarta.annotation.PostConstruct;
 
@@ -23,7 +23,7 @@ import java.util.UUID;
 @Service
 public class VideoService {
   @Autowired
-  private ShowRepository showRepository;
+  private SerieRepository serieRepository;
 
   @Autowired
   private VideoRepository videoRepository;
@@ -42,15 +42,15 @@ public class VideoService {
   }
 
   @Transactional
-  public Video uploadVideo(MultipartFile videoFile, Long showId, int seasonNumber, int episodeNumber) {
-    Optional<Show> show = showRepository.findById(showId);
-    if (!show.isPresent()) {
-      throw new CustomException("Show does not exist", HttpStatus.NOT_FOUND);
+  public Video uploadVideo(MultipartFile videoFile, Long serieId, int seasonNumber, int episodeNumber) {
+    Optional<Serie> serie = serieRepository.findById(serieId);
+    if (!serie.isPresent()) {
+      throw new CustomException("Serie does not exist", HttpStatus.NOT_FOUND);
     }
     if (seasonNumber < 1 || episodeNumber < 1) {
       throw new CustomException("Invalid season or episode number", HttpStatus.BAD_REQUEST);
     }
-    if (!videoRepository.findByShowAndSeasonAndEpisode(show.get(), seasonNumber, episodeNumber).isEmpty()) {
+    if (!videoRepository.findBySerieAndSeasonAndEpisode(serie.get(), seasonNumber, episodeNumber).isEmpty()) {
       throw new CustomException("Episode already exists", HttpStatus.CONFLICT);
     }
 
@@ -74,7 +74,7 @@ public class VideoService {
     }
 
     Video videoEntity = new Video();
-    videoEntity.setShow(show.get());
+    videoEntity.setSerie(serie.get());
     videoEntity.setSeason(seasonNumber);
     videoEntity.setEpisode(episodeNumber);
     videoEntity.setTitle("Episode " + episodeNumber);
@@ -113,8 +113,8 @@ public class VideoService {
   }
 
   @Transactional
-  public void deleteVideosForShow(Show show) {
-    Set<Video> videos = videoRepository.findByShow(show);
+  public void deleteVideosForSerie(Serie serie) {
+    Set<Video> videos = videoRepository.findBySerie(serie);
     for (Video video : videos) {
       String videoFilePath = "uploads/videos/" + video.getFilename();
       new File(videoFilePath).delete();

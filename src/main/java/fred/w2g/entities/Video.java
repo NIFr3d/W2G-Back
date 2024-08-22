@@ -24,8 +24,8 @@ public class Video {
   private String filename;
 
   @ManyToOne
-  @JoinColumn(name = "show_id")
-  private Show show;
+  @JoinColumn(name = "serie_id")
+  private Serie serie;
 
   private int season;
 

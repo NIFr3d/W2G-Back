@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Show {
+public class Serie {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;

@@ -11,32 +11,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fred.w2g.entities.Show;
-import fred.w2g.services.ShowService;
+import fred.w2g.entities.Serie;
+import fred.w2g.services.SerieService;
 
 @RestController
-@RequestMapping("/show")
-public class ShowController {
+@RequestMapping("/serie")
+public class SerieController {
   @Autowired
-  private ShowService showService;
+  private SerieService serieService;
 
   @GetMapping
-  public List<Show> getShows() {
-    return showService.getShows();
+  public List<Serie> getSeries() {
+    return serieService.getSeries();
   }
 
   @PostMapping
-  public Show createShow(@RequestParam String title, @RequestParam String description) {
-    return showService.createShow(title, description);
+  public Serie createSerie(@RequestParam String title, @RequestParam String description) {
+    return serieService.createSerie(title, description);
   }
 
   @GetMapping("/{id}")
-  public Show getShow(@PathVariable Long id) {
-    return showService.getShow(id);
+  public Serie getSerie(@PathVariable Long id) {
+    return serieService.getSerie(id);
   }
 
   @DeleteMapping("/{id}")
-  public void deleteShow(@PathVariable Long id) {
-    showService.deleteShow(id);
+  public void deleteSerie(@PathVariable Long id) {
+    serieService.deleteSerie(id);
   }
 }
