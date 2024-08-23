@@ -49,4 +49,12 @@ public class SerieService {
     videoService.deleteVideosForSerie(serie);
     serieRepository.deleteById(id);
   }
+
+  @Transactional(readOnly = true)
+  public Set<Integer> getSeasons(Long id) {
+    Serie serie = serieRepository.findById(id)
+        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+
+    return videoService.getSeasonsForSerie(serie);
+  }
 }

@@ -16,4 +16,6 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
   public Set<Video> findBySerieAndSeasonAndEpisode(Serie serie, int seasonNumber, int episodeNumber);
 
   public Set<Video> findBySerie(Serie serie);
+
+  public Set<Integer> findDistinctSeasonsBySerie(Serie serie);
 }

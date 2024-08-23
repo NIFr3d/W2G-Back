@@ -121,4 +121,9 @@ public class VideoService {
       videoRepository.delete(video);
     }
   }
+
+  @Transactional(readOnly = true)
+  public Set<Integer> getSeasonsForSerie(Serie serie) {
+    return videoRepository.findDistinctSeasonsBySerie(serie);
+  }
 }
