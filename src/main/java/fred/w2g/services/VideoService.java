@@ -12,6 +12,7 @@ import fred.w2g.exceptions.CustomException;
 import fred.w2g.repositories.SerieRepository;
 import fred.w2g.repositories.VideoRepository;
 import jakarta.annotation.PostConstruct;
+import fred.w2g.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +31,8 @@ public class VideoService {
 
   @PostConstruct
   public void init() {
-    createDirectory("uploads/temp");
-    createDirectory("uploads/videos");
-  }
-
-  private void createDirectory(String path) {
-    File directory = new File(path);
-    if (!directory.exists()) {
-      directory.mkdirs();
-    }
+    Utils.createDirectory("uploads/temp");
+    Utils.createDirectory("uploads/videos");
   }
 
   @Transactional

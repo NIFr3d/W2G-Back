@@ -31,8 +31,7 @@ public class SerieController {
   @PostMapping
   public Serie createSerie(@RequestPart("title") String title, @RequestPart("description") String description,
       @RequestPart("thumbnail") MultipartFile thumbnail) {
-    System.out.println(thumbnail.getOriginalFilename()); // TODO : save thumbnail
-    return serieService.createSerie(title, description);
+    return serieService.createSerie(title, description, thumbnail);
   }
 
   @GetMapping("/{id}")
@@ -43,6 +42,11 @@ public class SerieController {
   @GetMapping("/{id}/seasons")
   public Set<Integer> getSeasons(@PathVariable Long id) {
     return serieService.getSeasons(id);
+  }
+
+  @GetMapping("/{id}/thumbnail")
+  public byte[] getThumbnail(@PathVariable Long id) {
+    return serieService.getThumbnail(id);
   }
 
   @DeleteMapping("/{id}")

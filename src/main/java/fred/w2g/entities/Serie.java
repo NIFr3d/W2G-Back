@@ -17,4 +17,6 @@ public class Serie {
 
   private String description;
 
+  private String imageUrl;
+
 }
