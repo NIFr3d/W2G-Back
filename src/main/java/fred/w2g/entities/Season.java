@@ -24,13 +24,13 @@ public class Season {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "serie_id")
   private Serie serie;
 
   private int number;
 
-  @OneToMany(mappedBy = "season", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "season", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   private Set<Video> videos;
 }

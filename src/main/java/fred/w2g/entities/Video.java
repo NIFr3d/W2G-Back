@@ -24,11 +24,7 @@ public class Video {
   @Column(unique = true)
   private String filename;
 
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "serie_id")
-  private Serie serie;
-
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "season_id")
   private Season season;
 

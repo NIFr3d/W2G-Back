@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import fred.w2g.entities.Season;
 import fred.w2g.entities.Serie;
 import fred.w2g.models.SerieRequest;
+import fred.w2g.services.SeasonService;
 import fred.w2g.services.SerieService;
 
 @RestController
@@ -27,6 +28,9 @@ import fred.w2g.services.SerieService;
 public class SerieController {
   @Autowired
   private SerieService serieService;
+
+  @Autowired
+  private SeasonService seasonService;
 
   @GetMapping
   public List<Serie> getSeries() {
@@ -66,11 +70,19 @@ public class SerieController {
 
   @GetMapping("/{id}/season")
   public List<Season> getSeasons(@PathVariable Long id) {
-    return serieService.getSeasons(id);
+    return seasonService.getSeasons(id);
   }
 
   @PostMapping("/{id}/season")
   public void createSeason(@PathVariable Long id) {
-    serieService.createSeason(id);
+    seasonService.createSeason(id);
   }
+
+  @DeleteMapping("/{id}/season/{seasonId}")
+  public void deleteSeason(@PathVariable Long id, @PathVariable Long seasonId) {
+    Season toDelete = seasonService.getSeason(seasonId);
+    seasonService.deleteSeason(toDelete);
+
+  }
+
 }

@@ -50,7 +50,7 @@ public class VideoService {
     if (!season.isPresent()) {
       throw new CustomException("Season does not exist", HttpStatus.NOT_FOUND);
     }
-    if (!videoRepository.findBySerieAndSeasonAndEpisode(serie.get(), season.get(), episodeNumber).isEmpty()) {
+    if (!videoRepository.findBySeasonAndEpisode(season.get(), episodeNumber).isEmpty()) {
       throw new CustomException("Episode already exists", HttpStatus.CONFLICT);
     }
 
@@ -74,7 +74,6 @@ public class VideoService {
     }
 
     Video videoEntity = new Video();
-    videoEntity.setSerie(serie.get());
     videoEntity.setSeason(season.get());
     videoEntity.setEpisode(episodeNumber);
     videoEntity.setTitle("Episode " + episodeNumber);
@@ -112,18 +111,4 @@ public class VideoService {
     process.waitFor();
   }
 
-  @Transactional
-  public void deleteVideosForSerie(Serie serie) {
-    Set<Video> videos = videoRepository.findBySerie(serie);
-    for (Video video : videos) {
-      String videoFilePath = "uploads/videos/" + video.getFilename();
-      new File(videoFilePath).delete();
-      videoRepository.delete(video);
-    }
-  }
-
-  @Transactional(readOnly = true)
-  public Set<Integer> getSeasonsForSerie(Serie serie) {
-    return videoRepository.findDistinctSeasonsBySerie(serie);
-  }
 }
