@@ -31,7 +31,7 @@ public class VideoController {
   public ResponseEntity<Video> uploadVideo(@RequestParam("video") MultipartFile video,
       @RequestParam("serieId") Long serieId,
       @RequestParam("seasonNumber") int seasonNumber,
-      @RequestParam("episodeNumber") int episodeNumber) {
+      @RequestParam("episodeNumber") float episodeNumber) {
     Video videoResult = videoService.uploadVideo(video, serieId, seasonNumber, episodeNumber);
     return ResponseEntity.ok(videoResult);
   }

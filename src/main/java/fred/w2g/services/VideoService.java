@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import fred.w2g.entities.Season;
 import fred.w2g.entities.Serie;
 import fred.w2g.entities.Video;
 import fred.w2g.exceptions.CustomException;
+import fred.w2g.repositories.SeasonRepository;
 import fred.w2g.repositories.SerieRepository;
 import fred.w2g.repositories.VideoRepository;
 import jakarta.annotation.PostConstruct;
@@ -29,6 +31,9 @@ public class VideoService {
   @Autowired
   private VideoRepository videoRepository;
 
+  @Autowired
+  private SeasonRepository seasonRepository;
+
   @PostConstruct
   public void init() {
     Utils.createDirectory("uploads/temp");
@@ -36,15 +41,16 @@ public class VideoService {
   }
 
   @Transactional
-  public Video uploadVideo(MultipartFile videoFile, Long serieId, int seasonNumber, int episodeNumber) {
+  public Video uploadVideo(MultipartFile videoFile, Long serieId, int seasonNumber, float episodeNumber) {
     Optional<Serie> serie = serieRepository.findById(serieId);
     if (!serie.isPresent()) {
       throw new CustomException("Serie does not exist", HttpStatus.NOT_FOUND);
     }
-    if (seasonNumber < 1 || episodeNumber < 1) {
-      throw new CustomException("Invalid season or episode number", HttpStatus.BAD_REQUEST);
+    Optional<Season> season = seasonRepository.findBySerieAndNumber(serie.get(), seasonNumber);
+    if (!season.isPresent()) {
+      throw new CustomException("Season does not exist", HttpStatus.NOT_FOUND);
     }
-    if (!videoRepository.findBySerieAndSeasonAndEpisode(serie.get(), seasonNumber, episodeNumber).isEmpty()) {
+    if (!videoRepository.findBySerieAndSeasonAndEpisode(serie.get(), season.get(), episodeNumber).isEmpty()) {
       throw new CustomException("Episode already exists", HttpStatus.CONFLICT);
     }
 
@@ -69,7 +75,7 @@ public class VideoService {
 
     Video videoEntity = new Video();
     videoEntity.setSerie(serie.get());
-    videoEntity.setSeason(seasonNumber);
+    videoEntity.setSeason(season.get());
     videoEntity.setEpisode(episodeNumber);
     videoEntity.setTitle("Episode " + episodeNumber);
     videoEntity.setDescription("Season " + seasonNumber + " Episode " + episodeNumber);

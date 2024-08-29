@@ -1,37 +1,36 @@
 package fred.w2g.entities;
 
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 
 @Entity
 @Data
-public class Video {
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "serie_id", "number" }))
+public class Season {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
-
-  private String title;
-
-  private String description;
-
-  @Column(unique = true)
-  private String filename;
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "serie_id")
   private Serie serie;
 
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "season_id")
-  private Season season;
+  private int number;
 
-  private float episode;
-
+  @OneToMany(mappedBy = "season", cascade = CascadeType.ALL)
+  @JsonIgnore
+  private Set<Video> videos;
 }
