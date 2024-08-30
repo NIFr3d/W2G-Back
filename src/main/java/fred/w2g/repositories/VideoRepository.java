@@ -14,6 +14,6 @@ import fred.w2g.entities.Video;
 public interface VideoRepository extends JpaRepository<Video, Long> {
   public Optional<Video> findByFilename(String filename);
 
-  public Set<Video> findBySeasonAndEpisode(Season season, float episodeNumber);
+  public Optional<Video> findBySeasonAndEpisode(Season season, float episodeNumber);
 
 }

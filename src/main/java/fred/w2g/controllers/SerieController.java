@@ -1,6 +1,7 @@
 package fred.w2g.controllers;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import fred.w2g.entities.Season;
 import fred.w2g.entities.Serie;
+import fred.w2g.entities.Video;
 import fred.w2g.models.SerieRequest;
 import fred.w2g.services.SeasonService;
 import fred.w2g.services.SerieService;
@@ -88,6 +90,22 @@ public class SerieController {
     Season toDelete = seasonService.getSeason(seasonId);
     seasonService.deleteSeason(toDelete);
 
+  }
+
+  @GetMapping("/{id}/video")
+  public Set<Video> getVideosForSerie(@PathVariable Long id) {
+    Serie serie = serieService.getSerie(id);
+    Set<Video> videos = new HashSet<>();
+    for (Season season : serie.getSeasons()) {
+      videos.addAll(season.getVideos());
+    }
+    return videos;
+  }
+
+  @GetMapping("/{id}/season/{seasonId}/video")
+  public Set<Video> getVideosForSeason(@PathVariable Long id, @PathVariable Long seasonId) {
+    Season season = seasonService.getSeason(seasonId);
+    return season.getVideos();
   }
 
 }
