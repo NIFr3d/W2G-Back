@@ -78,6 +78,11 @@ public class SerieController {
     seasonService.createSeason(id);
   }
 
+  @PutMapping("/{id}/season/{seasonId}")
+  public Season updateSeason(@PathVariable Long id, @PathVariable Long seasonId, @RequestParam int number) {
+    return seasonService.updateSeason(seasonId, number);
+  }
+
   @DeleteMapping("/{id}/season/{seasonId}")
   public void deleteSeason(@PathVariable Long id, @PathVariable Long seasonId) {
     Season toDelete = seasonService.getSeason(seasonId);

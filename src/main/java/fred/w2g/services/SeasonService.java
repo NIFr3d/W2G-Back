@@ -55,4 +55,12 @@ public class SeasonService {
     seasonRepository.delete(season);
 
   }
+
+  @Transactional
+  public Season updateSeason(Long id, int number) {
+    Season season = seasonRepository.findById(id)
+        .orElseThrow(() -> new CustomException("Season does not exist", HttpStatus.NOT_FOUND));
+    season.setNumber(number);
+    return seasonRepository.save(season);
+  }
 }
