@@ -26,7 +26,7 @@ public class Serie {
 
   private String imageUrl;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "serie", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   private Set<Season> seasons;
 

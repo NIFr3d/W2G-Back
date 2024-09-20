@@ -10,17 +10,23 @@ import javax.imageio.ImageIO;
 
 import jakarta.annotation.PostConstruct;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import fred.w2g.entities.Season;
 import fred.w2g.entities.Serie;
+import fred.w2g.entities.Video;
 import fred.w2g.exceptions.CustomException;
 import fred.w2g.models.SerieRequest;
 import fred.w2g.repositories.SeasonRepository;
 import fred.w2g.repositories.SerieRepository;
+import fred.w2g.repositories.VideoRepository;
 import fred.w2g.utils.Utils;
 
 @Service
@@ -29,7 +35,7 @@ public class SerieService {
   private SerieRepository serieRepository;
 
   @Autowired
-  private VideoService videoService;
+  private VideoRepository videoRepository;
 
   @Autowired
   SeasonRepository seasonRepository;
@@ -130,4 +136,19 @@ public class SerieService {
     }
   }
 
+  @Transactional(readOnly = true)
+  public List<Video> getVideos(Long id) {
+
+    Serie serie = serieRepository.findById(id)
+        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+    List<Season> seasons = seasonRepository.findBySerie(serie);
+    List<Video> videos = new ArrayList<>();
+
+    for (Season season : seasons) {
+      synchronized (season) { // Synchronisation pour éviter les problèmes de concurrence
+        videos.addAll(videoRepository.findBySeason(season)); // Créer une copie de la collection
+      }
+    }
+    return videos;
+  }
 }

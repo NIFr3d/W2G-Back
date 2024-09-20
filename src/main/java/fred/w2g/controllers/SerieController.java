@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import fred.w2g.entities.Season;
 import fred.w2g.entities.Serie;
 import fred.w2g.entities.Video;
+import fred.w2g.models.EpisodesUploadRequest;
 import fred.w2g.models.SerieRequest;
 import fred.w2g.services.SeasonService;
 import fred.w2g.services.SerieService;
@@ -93,19 +95,21 @@ public class SerieController {
   }
 
   @GetMapping("/{id}/video")
-  public Set<Video> getVideosForSerie(@PathVariable Long id) {
-    Serie serie = serieService.getSerie(id);
-    Set<Video> videos = new HashSet<>();
-    for (Season season : serie.getSeasons()) {
-      videos.addAll(season.getVideos());
-    }
-    return videos;
+  public List<Video> getVideosForSerie(@PathVariable Long id) {
+    return serieService.getVideos(id);
   }
 
-  @GetMapping("/{id}/season/{seasonId}/video")
-  public Set<Video> getVideosForSeason(@PathVariable Long id, @PathVariable Long seasonId) {
-    Season season = seasonService.getSeason(seasonId);
-    return season.getVideos();
+  @PostMapping("/{id}/season/{seasonId}/video")
+  public void addVideosToSeason(@ModelAttribute EpisodesUploadRequest request, @PathVariable Long id,
+      @PathVariable Long seasonId) {
+    seasonService.addVideosToSeason(seasonId, request);
+    try { // On attend 2 secondes pour que les fichiers temporaires ne soient pas
+          // supprimés avant d'être copiés
+      Thread.sleep(2000);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
+    }
   }
 
 }

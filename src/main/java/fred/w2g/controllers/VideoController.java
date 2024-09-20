@@ -27,14 +27,16 @@ public class VideoController {
   @Autowired
   private VideoService videoService;
 
-  @PostMapping()
-  public ResponseEntity<Video> uploadVideo(@RequestParam("video") MultipartFile video,
-      @RequestParam("serieId") Long serieId,
-      @RequestParam("seasonNumber") int seasonNumber,
-      @RequestParam("episodeNumber") float episodeNumber) {
-    Video videoResult = videoService.uploadVideo(video, serieId, seasonNumber, episodeNumber);
-    return ResponseEntity.ok(videoResult);
-  }
+  // @PostMapping()
+  // public ResponseEntity<Video> uploadVideo(@RequestParam("video") MultipartFile
+  // video,
+  // @RequestParam("serieId") Long serieId,
+  // @RequestParam("seasonNumber") int seasonNumber,
+  // @RequestParam("episodeNumber") float episodeNumber) {
+  // Video videoResult = videoService.uploadVideo(video, serieId, seasonNumber,
+  // episodeNumber);
+  // return ResponseEntity.ok(videoResult);
+  // }
 
   @GetMapping("/{id}")
   public ResponseEntity<UrlResource> getVideo(@PathVariable("id") Long videoId) throws MalformedURLException {
