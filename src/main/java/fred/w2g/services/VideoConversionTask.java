@@ -1,6 +1,7 @@
 package fred.w2g.services;
 
 import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.FFmpegLogCallback;
@@ -31,18 +32,20 @@ public class VideoConversionTask implements Runnable {
       // Configurer l'enregistreur
       FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputFilePath, grabber.getImageWidth(),
           grabber.getImageHeight(), grabber.getAudioChannels());
-      recorder.setVideoCodec(avcodec.AV_CODEC_ID_VP8); // Choisir le codec vidéo
-      recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS); // Choisir le codec audio
-      recorder.setFormat("webm"); // Format de sortie
+      recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264); // Utiliser le codec H.264 pour la vidéo
+      recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC); // Utiliser le codec AAC pour l'audio
+      recorder.setFormat("mp4"); // Format de sortie MP4
 
-      // Améliorer la qualité vidéo
-      recorder.setFrameRate(grabber.getFrameRate());
-      recorder.setVideoBitrate(2000 * 1000); // Bitrate vidéo : 2000 kbps
-      recorder.setVideoOption("crf", "10"); // CRF pour ajuster la qualité
+      // Paramètres de qualité vidéo
+      recorder.setFrameRate(grabber.getFrameRate()); // Frame rate du fichier source
+      recorder.setVideoBitrate(4000 * 1000); // Bitrate vidéo augmenté à 4000 kbps pour une meilleure qualité
+      recorder.setAudioBitrate(192 * 1000); // Bitrate audio à 192 kbps
+      recorder.setSampleRate(grabber.getSampleRate()); // Garder la même fréquence d'échantillonnage
 
-      // Améliorer la qualité audio
-      recorder.setAudioBitrate(128 * 1000); // Bitrate audio : 128 kbps
-      recorder.setSampleRate(grabber.getSampleRate());
+      // Options supplémentaires pour H.264
+      recorder.setVideoOption("preset", "slow"); // Choisir un preset lent pour une meilleure compression
+      recorder.setVideoOption("crf", "23"); // Le CRF pour une bonne qualité (valeur par défaut est généralement 23)
+      recorder.setVideoOption("profile", "main"); // Utiliser le profil Main pour H.264
 
       recorder.start();
 

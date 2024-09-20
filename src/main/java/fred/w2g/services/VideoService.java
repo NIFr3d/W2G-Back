@@ -53,7 +53,7 @@ public class VideoService {
     String originalExtension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
     String randomFileName = generateRandomFileName();
     String tempFilePath = "uploads/temp/" + randomFileName + "." + originalExtension;
-    String webmFileName = randomFileName.replaceFirst("[.][^.]+$", "") + ".webm";
+    String webmFileName = randomFileName.replaceFirst("[.][^.]+$", "") + ".mp4";
     String videoFilePath = "uploads/videos/" + webmFileName;
 
     Video videoEntity = createVideoInDB(episodeNumber, season, webmFileName);
