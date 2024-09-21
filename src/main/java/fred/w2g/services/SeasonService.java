@@ -80,8 +80,10 @@ public class SeasonService {
 
   @Async
   @Transactional
-  public void addVideosToSeason(Long seasonId, EpisodesUploadRequest request) {
-    Season season = seasonRepository.findById(seasonId)
+  public void addVideosToSeason(Long serieId, int seasonNumber, EpisodesUploadRequest request) {
+    Serie serie = serieRepository.findById(serieId)
+        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+    Season season = seasonRepository.findBySerieAndNumber(serie, seasonNumber)
         .orElseThrow(() -> new CustomException("Season does not exist", HttpStatus.NOT_FOUND));
     if (videoRepository.findBySeason(season).stream()
         .anyMatch(video -> video.getEpisode() == request.getEpisodeStart())) {
@@ -91,5 +93,17 @@ public class SeasonService {
     for (int i = 0; i < files.size(); i++) {
       videoService.uploadVideo(files.get(i), season, request.getEpisodeStart() + i);
     }
+  }
+
+  @Transactional
+  public void deleteVideoFromSeason(Long seasonId, Long videoId) {
+    Season season = seasonRepository.findById(seasonId)
+        .orElseThrow(() -> new CustomException("Season does not exist", HttpStatus.NOT_FOUND));
+    Video video = videoRepository.findById(videoId)
+        .orElseThrow(() -> new CustomException("Video does not exist", HttpStatus.NOT_FOUND));
+    if (!video.getSeason().equals(season)) {
+      throw new CustomException("Video does not belong to the season", HttpStatus.FORBIDDEN);
+    }
+    videoService.deleteVideo(video);
   }
 }

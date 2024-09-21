@@ -35,10 +35,13 @@ public class VideoService {
   @Autowired
   private VideoRepository videoRepository;
 
+  private final String tempDirectory = System.getenv().getOrDefault("TEMP_DIRECTORY", "uploads/temp");
+  private final String videoDirectory = System.getenv().getOrDefault("VIDEO_DIRECTORY", "uploads/videos");
+
   @PostConstruct
   public void init() {
-    Utils.createDirectory("uploads/temp");
-    Utils.createDirectory("uploads/videos");
+    Utils.createDirectory(tempDirectory);
+    Utils.createDirectory(videoDirectory);
   }
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(4); // Pool de threads
@@ -52,11 +55,11 @@ public class VideoService {
     String originalFileName = videoFile.getOriginalFilename();
     String originalExtension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
     String randomFileName = generateRandomFileName();
-    String tempFilePath = "uploads/temp/" + randomFileName + "." + originalExtension;
-    String webmFileName = randomFileName.replaceFirst("[.][^.]+$", "") + ".mp4";
-    String videoFilePath = "uploads/videos/" + webmFileName;
+    String tempFilePath = tempDirectory + "/" + randomFileName + "." + originalExtension;
+    String mp4FileName = randomFileName.replaceFirst("[.][^.]+$", "") + ".mp4";
+    String videoFilePath = videoDirectory + "/" + mp4FileName;
 
-    Video videoEntity = createVideoInDB(episodeNumber, season, webmFileName);
+    Video videoEntity = createVideoInDB(episodeNumber, season, mp4FileName);
 
     try {
       conversionSteps(videoFile, tempFilePath, videoFilePath, videoEntity.getId());
@@ -102,7 +105,7 @@ public class VideoService {
   private String generateRandomFileName() {
     while (true) {
       String randomString = UUID.randomUUID().toString();
-      String randomFileName = randomString + ".webm";
+      String randomFileName = randomString + ".mp4";
       if (!videoRepository.findByFilename(randomFileName).isPresent()) {
         return randomString;
       }
@@ -130,6 +133,15 @@ public class VideoService {
     executorService.submit(task);
     taskStatus.put(videoEntityId.toString(), "STARTED");
 
+  }
+
+  @Transactional
+  public void deleteVideo(Video video) {
+    File videoFile = new File(videoDirectory + "/" + video.getFilename());
+    if (videoFile.exists()) {
+      videoFile.delete();
+    }
+    videoRepository.delete(video);
   }
 
 }

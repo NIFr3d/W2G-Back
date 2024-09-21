@@ -99,10 +99,10 @@ public class SerieController {
     return serieService.getVideos(id);
   }
 
-  @PostMapping("/{id}/season/{seasonId}/video")
+  @PostMapping("/{id}/season/{seasonNumber}/video")
   public void addVideosToSeason(@ModelAttribute EpisodesUploadRequest request, @PathVariable Long id,
-      @PathVariable Long seasonId) {
-    seasonService.addVideosToSeason(seasonId, request);
+      @PathVariable int seasonNumber) {
+    seasonService.addVideosToSeason(id, seasonNumber, request);
     try { // On attend 2 secondes pour que les fichiers temporaires ne soient pas
           // supprimés avant d'être copiés
       Thread.sleep(2000);
@@ -110,6 +110,11 @@ public class SerieController {
       Thread.currentThread().interrupt();
       throw new RuntimeException(e);
     }
+  }
+
+  @DeleteMapping("/{id}/season/{seasonId}/video/{videoId}")
+  public void deleteVideoFromSeason(@PathVariable Long id, @PathVariable Long seasonId, @PathVariable Long videoId) {
+    seasonService.deleteVideoFromSeason(seasonId, videoId);
   }
 
 }
