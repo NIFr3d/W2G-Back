@@ -33,10 +33,9 @@ public class SerieService {
   private SerieRepository serieRepository;
 
   @Autowired
-  private VideoRepository videoRepository;
-
-  @Autowired
   SeasonRepository seasonRepository;
+
+  private final String imageDirectory = System.getenv().getOrDefault("IMAGE_DIRECTORY", "uploads/images");
 
   @PostConstruct
   public void init() {
@@ -58,7 +57,7 @@ public class SerieService {
     }
 
     String uniqueFileName = UUID.randomUUID().toString() + ".webp";
-    File outputFile = new File("uploads/images/" + uniqueFileName);
+    File outputFile = new File(imageDirectory + "/" + uniqueFileName);
 
     try {
       BufferedImage bufferedImage = ImageIO.read(thumbnail.getInputStream());
@@ -70,7 +69,7 @@ public class SerieService {
     Serie serie = new Serie();
     serie.setTitle(title);
     serie.setDescription(description);
-    serie.setImageUrl(outputFile.getPath());
+    serie.setImageUrl(uniqueFileName);
 
     return serieRepository.save(serie);
   }
@@ -112,7 +111,7 @@ public class SerieService {
     Serie serie = serieRepository.findById(id)
         .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
 
-    return Utils.readFile(serie.getImageUrl());
+    return Utils.readFile(imageDirectory + "/" + serie.getImageUrl());
   }
 
   @Transactional
@@ -124,7 +123,7 @@ public class SerieService {
       throw new CustomException("Invalid file type", HttpStatus.BAD_REQUEST);
     }
 
-    File outputFile = new File(serie.getImageUrl());
+    File outputFile = new File(imageDirectory + "/" + serie.getImageUrl());
 
     try {
       BufferedImage bufferedImage = ImageIO.read(thumbnail.getInputStream());

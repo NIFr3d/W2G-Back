@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import fred.w2g.listeners.SerieEntityListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,6 +16,7 @@ import lombok.Data;
 
 @Entity
 @Data
+@EntityListeners(SerieEntityListener.class)
 public class Serie {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
