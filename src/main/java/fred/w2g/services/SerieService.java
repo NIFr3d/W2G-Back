@@ -10,8 +10,6 @@ import javax.imageio.ImageIO;
 
 import jakarta.annotation.PostConstruct;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -141,12 +139,12 @@ public class SerieService {
 
     Serie serie = serieRepository.findById(id)
         .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
-    List<Season> seasons = seasonRepository.findBySerie(serie);
+    List<Season> seasons = serie.getSeasons();
     List<Video> videos = new ArrayList<>();
 
     for (Season season : seasons) {
       synchronized (season) { // Synchronisation pour éviter les problèmes de concurrence
-        videos.addAll(videoRepository.findBySeason(season)); // Créer une copie de la collection
+        videos.addAll(season.getVideos()); // Créer une copie de la collection
       }
     }
     return videos;

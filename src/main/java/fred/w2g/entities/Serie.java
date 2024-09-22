@@ -1,12 +1,11 @@
 package fred.w2g.entities;
 
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +27,6 @@ public class Serie {
 
   @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private Set<Season> seasons;
+  private List<Season> seasons;
 
 }

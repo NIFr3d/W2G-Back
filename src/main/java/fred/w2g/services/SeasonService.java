@@ -1,16 +1,12 @@
 package fred.w2g.services;
 
-import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,7 +61,6 @@ public class SeasonService {
 
   @Transactional
   public void deleteSeason(Season season) {
-    // TODO : Delete all videos in the season, including files
     seasonRepository.delete(season);
 
   }

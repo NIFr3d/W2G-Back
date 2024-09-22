@@ -1,12 +1,11 @@
 package fred.w2g.entities;
 
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,12 +25,12 @@ public class Season {
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "serie_id")
+  @JoinColumn(name = "serie_id", nullable = false)
   private Serie serie;
 
   private int number;
 
   @OneToMany(mappedBy = "season", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private Set<Video> videos;
+  private List<Video> videos;
 }

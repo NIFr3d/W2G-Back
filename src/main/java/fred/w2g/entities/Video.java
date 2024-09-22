@@ -1,8 +1,10 @@
 package fred.w2g.entities;
 
+import fred.w2g.listeners.VideoEntityListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +17,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "season_id", "episode" }))
+@EntityListeners(VideoEntityListener.class)
 public class Video {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,7 +31,7 @@ public class Video {
   private String filename;
 
   @ManyToOne
-  @JoinColumn(name = "season_id")
+  @JoinColumn(name = "season_id", nullable = false)
   private Season season;
 
   private float episode;

@@ -8,11 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import fred.w2g.entities.Season;
-import fred.w2g.entities.Serie;
 import fred.w2g.entities.Video;
 import fred.w2g.exceptions.CustomException;
-import fred.w2g.repositories.SeasonRepository;
-import fred.w2g.repositories.SerieRepository;
 import fred.w2g.repositories.VideoRepository;
 import jakarta.annotation.PostConstruct;
 import fred.w2g.utils.Utils;
@@ -20,14 +17,11 @@ import fred.w2g.utils.Utils;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Optional;
-import java.util.Set;
+
 import java.util.UUID;
 
 @Service
@@ -137,10 +131,6 @@ public class VideoService {
 
   @Transactional
   public void deleteVideo(Video video) {
-    File videoFile = new File(videoDirectory + "/" + video.getFilename());
-    if (videoFile.exists()) {
-      videoFile.delete();
-    }
     videoRepository.delete(video);
   }
 
