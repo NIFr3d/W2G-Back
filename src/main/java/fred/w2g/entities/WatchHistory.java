@@ -1,5 +1,7 @@
 package fred.w2g.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +17,13 @@ public class WatchHistory {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  private Long userId;
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  @JsonIgnore
+  private User user;
 
   @ManyToOne
-  @JoinColumn(name = "video_id")
+  @JoinColumn(name = "video_id", nullable = false)
   private Video video;
 
   private String watchTime;
