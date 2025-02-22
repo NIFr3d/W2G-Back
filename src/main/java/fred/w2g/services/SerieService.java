@@ -33,6 +33,9 @@ public class SerieService {
   private SerieRepository serieRepository;
 
   @Autowired
+  private SeasonService seasonService;
+
+  @Autowired
   SeasonRepository seasonRepository;
 
   private final String imageDirectory = System.getenv().getOrDefault("IMAGE_DIRECTORY", "uploads/images");
@@ -102,7 +105,7 @@ public class SerieService {
   public void deleteSerie(Long id) {
     Serie serie = serieRepository.findById(id)
         .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
-    // TODO : delete all seasons, videos and thumbnail
+    serie.getSeasons().forEach(seasonService::deleteSeason);
     serieRepository.deleteById(id);
   }
 

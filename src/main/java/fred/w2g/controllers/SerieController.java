@@ -86,9 +86,7 @@ public class SerieController {
 
   @DeleteMapping("/{id}/season/{seasonId}")
   public void deleteSeason(@PathVariable Long id, @PathVariable Long seasonId) {
-    Season toDelete = seasonService.getSeason(seasonId);
-    seasonService.deleteSeason(toDelete);
-
+    seasonService.deleteSeasonById(seasonId);
   }
 
   @GetMapping("/{id}/video")

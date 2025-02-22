@@ -59,10 +59,11 @@ public class SeasonService {
         .orElseThrow(() -> new CustomException("Season does not exist", HttpStatus.NOT_FOUND));
   }
 
-  @Transactional
-  public void deleteSeason(Season season) {
-    seasonRepository.delete(season);
-
+  @Transactional(readOnly = true)
+  public void deleteSeasonById(Long id) {
+    Season season = seasonRepository.findById(id)
+        .orElseThrow(() -> new CustomException("Season does not exist", HttpStatus.NOT_FOUND));
+    deleteSeason(season);
   }
 
   @Transactional
@@ -84,10 +85,7 @@ public class SeasonService {
         .anyMatch(video -> video.getEpisode() == request.getEpisodeStart())) {
       throw new CustomException("Episode already exists in the season", HttpStatus.FORBIDDEN);
     }
-    List<MultipartFile> files = request.getFiles();
-    for (int i = 0; i < files.size(); i++) {
-      videoService.uploadVideo(files.get(i), season, request.getEpisodeStart() + i);
-    }
+    videoService.uploadVideos(request.getFiles(), season, request.getEpisodeStart());
   }
 
   @Transactional
@@ -100,5 +98,11 @@ public class SeasonService {
       throw new CustomException("Video does not belong to the season", HttpStatus.FORBIDDEN);
     }
     videoService.deleteVideo(video);
+  }
+
+  @Transactional
+  public void deleteSeason(Season season) {
+    season.getVideos().forEach(videoService::deleteVideo);
+    seasonRepository.delete(season);
   }
 }
