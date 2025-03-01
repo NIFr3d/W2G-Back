@@ -11,9 +11,10 @@ import fred.w2g.entities.Serie;
 
 @Repository
 public interface SeasonRepository extends JpaRepository<Season, Long> {
+  Optional<Season> findBySerieAndId(Serie serie, Long id);
   Optional<Season> findBySerieAndNumber(Serie serie, int number);
 
-  List<Season> findBySerie(Serie serie);
+  List<Season> findBySerieOrderByNumberAsc(Serie serie);
 
   default Optional<Integer> findMaxNumberBySerie(Serie serie) {
     return findAll().stream()

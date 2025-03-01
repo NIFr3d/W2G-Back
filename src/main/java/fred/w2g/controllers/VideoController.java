@@ -18,21 +18,26 @@ import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 
 @RestController
-@RequestMapping("/video")
 @RequiredArgsConstructor
 public class VideoController {
 
   private final VideoService videoService;
 
-  @GetMapping("/{id}")
+  @GetMapping("/video/{id}")
   public ResponseEntity<UrlResource> getVideo(@PathVariable("id") Long videoId) throws MalformedURLException {
     Video videoEntity = videoService.getVideo(videoId);
     UrlResource video = new UrlResource(
-        String.format("file:uploads/videos/%s", videoEntity.getFilename()));
+        String.format("file:uploads/videos/%s%s", videoEntity.getFilename(), ".mp4"));
     return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
         .contentType(MediaTypeFactory.getMediaType(video)
             .orElse(MediaType.APPLICATION_OCTET_STREAM))
         .body(video);
+  }
+
+  @GetMapping("/episode/{id}")
+  public Video getEpisode(@PathVariable("id") Long episodeId) {
+    return videoService.getVideo(episodeId);
+    
   }
 
 }

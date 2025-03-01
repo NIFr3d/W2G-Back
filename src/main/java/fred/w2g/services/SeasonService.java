@@ -45,7 +45,7 @@ public class SeasonService {
   public List<Season> getSeasons(Long serieId) {
     Serie serie = serieRepository.findById(serieId)
         .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
-    return seasonRepository.findBySerie(serie);
+    return seasonRepository.findBySerieOrderByNumberAsc(serie);
   }
 
   @Transactional(readOnly = true)
@@ -93,6 +93,18 @@ public class SeasonService {
       throw new CustomException(Constants.VIDEO_NOT_IN_SEASON_ERROR, HttpStatus.FORBIDDEN);
     }
     videoService.deleteVideo(video);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Video> getVideosForSeason(Long serieId, Long seasonId) {
+    Serie serie = serieRepository.findById(serieId)
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
+    Season season = seasonRepository.findById(seasonId)
+        .orElseThrow(() -> new CustomException(Constants.SEASON_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
+    if (!season.getSerie().getId().equals(serie.getId())) {
+      throw new CustomException("Season not in serie", HttpStatus.FORBIDDEN);
+    }
+    return videoRepository.findBySeason(season);
   }
 
   public void deleteSeason(Season season) {

@@ -136,7 +136,6 @@ public class SerieService {
 
   @Transactional(readOnly = true)
   public List<Video> getVideos(Long id) {
-
     Serie serie = serieRepository.findById(id)
         .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
     List<Season> seasons = serie.getSeasons();

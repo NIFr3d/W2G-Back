@@ -94,6 +94,11 @@ public class SerieController {
     return serieService.getVideos(id);
   }
 
+  @GetMapping("/{serieId}/season/{seasonId}/video")
+  public List<Video> getVideosForSeason(@PathVariable Long serieId, @PathVariable Long seasonId) {
+    return seasonService.getVideosForSeason(serieId, seasonId);
+  }
+
   @PostMapping("/{id}/season/{seasonNumber}/video")
   public void addVideosToSeason(@ModelAttribute EpisodesUploadRequest request, @PathVariable Long id,
       @PathVariable int seasonNumber) {
