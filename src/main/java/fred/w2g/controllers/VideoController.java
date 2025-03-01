@@ -2,18 +2,15 @@ package fred.w2g.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import fred.w2g.entities.Video;
 import fred.w2g.services.VideoService;
+import lombok.RequiredArgsConstructor;
 
 import java.net.MalformedURLException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,10 +19,10 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/video")
+@RequiredArgsConstructor
 public class VideoController {
 
-  @Autowired
-  private VideoService videoService;
+  private final VideoService videoService;
 
   @GetMapping("/{id}")
   public ResponseEntity<UrlResource> getVideo(@PathVariable("id") Long videoId) throws MalformedURLException {

@@ -1,9 +1,7 @@
 package fred.w2g.services;
 
 import java.util.List;
-import java.lang.reflect.InvocationTargetException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,14 +10,14 @@ import fred.w2g.entities.User;
 import fred.w2g.exceptions.CustomException;
 import fred.w2g.models.UserRequest;
 import fred.w2g.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-  @Autowired
-  private UserRepository userRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   public User getUserByUsername(String username) {
     return userRepository.findByUsername(username)
@@ -43,7 +41,7 @@ public class UserService {
     User existingUser = userRepository.findById(id)
         .orElseThrow(() -> new CustomException("User does not exist", HttpStatus.NOT_FOUND));
     existingUser.setUsername(request.getUsername());
-    if(request.getPassword().length() > 0) {
+    if(!request.getPassword().isEmpty()) {
       existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
     }
     existingUser.setRole(request.getRole());

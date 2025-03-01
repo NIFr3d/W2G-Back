@@ -23,19 +23,19 @@ import fred.w2g.models.EpisodesUploadRequest;
 import fred.w2g.models.SerieRequest;
 import fred.w2g.services.SeasonService;
 import fred.w2g.services.SerieService;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/serie")
 public class SerieController {
-  @Autowired
-  private SerieService serieService;
-
-  @Autowired
-  private SeasonService seasonService;
+  
+  private final SerieService serieService;
+  private final SeasonService seasonService;
 
   @GetMapping
-  public List<Serie> getSeries() {
-    return serieService.getSeries();
+  public List<Serie> getSeries(@RequestParam(required = false) String search) {
+    return serieService.getSeries(search);
   }
 
   @PostMapping

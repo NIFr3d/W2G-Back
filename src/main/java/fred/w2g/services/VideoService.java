@@ -1,6 +1,5 @@
 package fred.w2g.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import fred.w2g.exceptions.CustomException;
 import fred.w2g.models.ConversionTask;
 import fred.w2g.repositories.VideoRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import fred.w2g.utils.Utils;
 
@@ -28,14 +28,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class VideoService {
-  @Autowired
-  private VideoRepository videoRepository;
+
+  private final VideoRepository videoRepository;
 
   private final String tempDirectory = System.getenv().getOrDefault("TEMP_DIRECTORY", "uploads/temp");
   private final String videoDirectory = System.getenv().getOrDefault("VIDEO_DIRECTORY", "uploads/videos");
@@ -175,8 +176,8 @@ public class VideoService {
   @Transactional
   public void deleteVideo(Video video) {
     try {
-      Files.deleteIfExists(new File(videoDirectory + "/" + video.getFilename() + ".mp4").toPath());
-      Files.deleteIfExists(new File(subsDirectory + "/" + video.getFilename() + ".srt").toPath());
+      Files.deleteIfExists(Paths.get(videoDirectory, video.getFilename() + ".mp4"));
+      Files.deleteIfExists(Paths.get(subsDirectory, video.getFilename() + ".srt"));
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -193,7 +194,7 @@ public class VideoService {
     }
   }
 
-  @Transactional
+
   private Video createVideoInDB(float episodeNumber, Season season, String mp4fileName) {
     Video videoEntity = new Video();
     videoEntity.setSeason(season);

@@ -9,9 +9,9 @@ import java.util.UUID;
 import javax.imageio.ImageIO;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,21 +22,16 @@ import fred.w2g.entities.Serie;
 import fred.w2g.entities.Video;
 import fred.w2g.exceptions.CustomException;
 import fred.w2g.models.SerieRequest;
-import fred.w2g.repositories.SeasonRepository;
 import fred.w2g.repositories.SerieRepository;
-import fred.w2g.repositories.VideoRepository;
+import fred.w2g.utils.Constants;
 import fred.w2g.utils.Utils;
 
 @Service
+@RequiredArgsConstructor
 public class SerieService {
-  @Autowired
-  private SerieRepository serieRepository;
 
-  @Autowired
-  private SeasonService seasonService;
-
-  @Autowired
-  SeasonRepository seasonRepository;
+  private final SerieRepository serieRepository;
+  private final SeasonService seasonService;
 
   private final String imageDirectory = System.getenv().getOrDefault("IMAGE_DIRECTORY", "uploads/images");
 
@@ -60,7 +55,7 @@ public class SerieService {
     }
 
     String uniqueFileName = UUID.randomUUID().toString() + ".webp";
-    File outputFile = new File(imageDirectory + "/" + uniqueFileName);
+    File outputFile = new File(imageDirectory + File.separator + uniqueFileName);
 
     try {
       BufferedImage bufferedImage = ImageIO.read(thumbnail.getInputStream());
@@ -78,20 +73,23 @@ public class SerieService {
   }
 
   @Transactional(readOnly = true)
-  public List<Serie> getSeries() {
+  public List<Serie> getSeries(String search) {
+    if (search != null && !search.isEmpty()) {
+      return serieRepository.findByTitleContainingIgnoreCase(search);
+    }
     return serieRepository.findAll();
   }
 
   @Transactional(readOnly = true)
   public Serie getSerie(Long id) {
     return serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
   }
 
   @Transactional
   public Serie updateSerie(Long id, SerieRequest toUpdate) {
     Serie serie = serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
     if (toUpdate.getTitle() != null && !toUpdate.getTitle().isEmpty()) {
       serie.setTitle(toUpdate.getTitle());
     }
@@ -104,7 +102,7 @@ public class SerieService {
   @Transactional
   public void deleteSerie(Long id) {
     Serie serie = serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
     serie.getSeasons().forEach(seasonService::deleteSeason);
     serieRepository.deleteById(id);
   }
@@ -112,7 +110,7 @@ public class SerieService {
   @Transactional(readOnly = true)
   public byte[] getThumbnail(Long id) {
     Serie serie = serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
 
     return Utils.readFile(imageDirectory + "/" + serie.getImageUrl());
   }
@@ -120,13 +118,13 @@ public class SerieService {
   @Transactional
   public void setThumbnail(Long id, MultipartFile thumbnail) {
     Serie serie = serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
 
     if (!Utils.isImage(thumbnail)) {
       throw new CustomException("Invalid file type", HttpStatus.BAD_REQUEST);
     }
 
-    File outputFile = new File(imageDirectory + "/" + serie.getImageUrl());
+    File outputFile = new File(imageDirectory + File.separator + serie.getImageUrl());
 
     try {
       BufferedImage bufferedImage = ImageIO.read(thumbnail.getInputStream());
@@ -140,7 +138,7 @@ public class SerieService {
   public List<Video> getVideos(Long id) {
 
     Serie serie = serieRepository.findById(id)
-        .orElseThrow(() -> new CustomException("Serie does not exist", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException(Constants.SERIE_NOT_FOUND_ERROR, HttpStatus.NOT_FOUND));
     List<Season> seasons = serie.getSeasons();
     List<Video> videos = new ArrayList<>();
 

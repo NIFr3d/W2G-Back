@@ -2,7 +2,6 @@ package fred.w2g.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import fred.w2g.entities.User;
 import fred.w2g.models.UserRequest;
 import fred.w2g.services.UserService;
+import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/users")
 @RestController
+@RequiredArgsConstructor
 public class UserController {
-  @Autowired
-  private UserService userService;
+
+  private final UserService userService;
 
   @GetMapping
   public List<User> getAllUsers() {

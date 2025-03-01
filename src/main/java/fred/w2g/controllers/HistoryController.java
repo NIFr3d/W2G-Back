@@ -1,6 +1,5 @@
 package fred.w2g.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,17 +10,17 @@ import fred.w2g.entities.User;
 import fred.w2g.entities.WatchHistory;
 import fred.w2g.services.HistoryService;
 import fred.w2g.services.UserService;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/history")
+@RequiredArgsConstructor
 public class HistoryController {
-  @Autowired
-  private HistoryService historyService;
 
-  @Autowired
-  private UserService userService;
+  private final HistoryService historyService;
+  private final UserService userService;
 
   @GetMapping
   public List<WatchHistory> getHistory(Authentication authentication) {

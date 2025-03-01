@@ -10,18 +10,16 @@ import fred.w2g.models.LoginResponse;
 import fred.w2g.entities.User;
 import fred.w2g.services.AuthenticationService;
 import fred.w2g.services.JwtService;
+import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/auth")
 @RestController
+@RequiredArgsConstructor
 public class AuthenticationController {
-  private final JwtService jwtService;
 
+  private final JwtService jwtService;
   private final AuthenticationService authenticationService;
 
-  public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
-    this.jwtService = jwtService;
-    this.authenticationService = authenticationService;
-  }
 
   @PostMapping("/login")
   public ResponseEntity<LoginResponse> authenticate(@RequestBody User loginRequest) {
