@@ -89,7 +89,7 @@ public class VideoService {
     String tempFilePath = tempDirectory + "/" + randomFileName + "." + originalExtension;
     String mp4FileName = randomFileName.replaceFirst("[.][^.]+$", "") + ".mp4";
     String videoFilePath = videoDirectory + "/" + mp4FileName;
-    String subFileName = randomFileName + ".srt";
+    String subFileName = randomFileName + ".vtt";
     String subFilePath = subsDirectory + "/" + subFileName;
 
     Video videoEntity = createVideoInDB(episodeNumber, season, randomFileName);
