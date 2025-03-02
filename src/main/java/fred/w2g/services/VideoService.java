@@ -118,13 +118,16 @@ public class VideoService {
       // Commandes ffmpeg pour convertir le fichier en mp4
       List<String> commandVideo = Arrays.asList(
         "ffmpeg", "-i", tempFilePath,
+        "-c:v", "libx264", "-preset", "faster", "-profile:v", "high",
+        "-s", "1280x720", "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
         videoFilePath
       );
 
       // Commandes ffmpeg pour extraire les sous-titres
       List<String> commandSubs = Arrays.asList(
         "ffmpeg", "-i", tempFilePath,
-        "-map", " 0:s:m:language:fre", subFilePath
+        "-map", "0:s:m:language:fre", subFilePath
       );
 
       task.setStatus("En cours");
