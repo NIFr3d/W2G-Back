@@ -36,11 +36,11 @@ public class VideoController {
   @GetMapping("/subtitles/{id}")
   public ResponseEntity<Resource> getSubtitles(@PathVariable("id") Long videoId) {
     Video videoEntity = videoService.getVideo(videoId);
-    Path subtitlesPath = Paths.get(String.format("uploads/subs/%s.vtt", videoEntity.getFilename()));
+    Path subtitlesPath = Paths.get(String.format("uploads/subs/%s.ass", videoEntity.getFilename()));
     Resource subtitlesResource = new PathResource(subtitlesPath);
     
     return ResponseEntity.ok()
-        .contentType(MediaType.parseMediaType("text/vtt"))
+        .contentType(MediaType.parseMediaType("text/ass"))
         .body(subtitlesResource);
   }
 
